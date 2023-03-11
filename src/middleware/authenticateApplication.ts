@@ -7,37 +7,15 @@ interface ApplicationInfo {
   name: string;
 }
 
-function isApplicationInfo(
-  applicationInfo: ApplicationInfo | Response
-): applicationInfo is ApplicationInfo {
-  return (applicationInfo as ApplicationInfo).applicationId !== undefined;
-}
-
-function invalidXAuthc1IdResponse(): Response {
-  return new Response(
-    "The application could not be authenticated, please check the provided X-Authc1-Id.",
-    {
-      status: 401,
-      headers: {
-        "content-type": "text/plain",
-      },
-    }
-  );
-}
-
 export function authenticateApplication(id?: string): MiddlewareHandler {
   return async (c: Context, next: Next) => {
     const applicationId = c.req.headers.get("X-Authc1-Id") as string;
-    const id = c.env.AuthC1App.idFromName(applicationId);
-    const applicationObj = c.env.AuthC1App.get(id);
-    const applicationClient = new ApplicationClient(applicationObj);
-    const data = await applicationClient.get();
+    const data = await c.env.AUTHC1_APPLICATION_PROVIDER_DETAILS.get(applicationId, { type: "json" });
     console.log("applicationInfo authenticateApplication ", data);
-    if (!data.id) {
+    if (!data?.applicationData?.id) {
       return setUnauthorizedResponse(c);
     }
     c.set("applicationInfo", data);
-    c.set("applicationClient", applicationClient);
     await next();
   };
 }

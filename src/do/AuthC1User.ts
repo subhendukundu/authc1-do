@@ -13,12 +13,14 @@ export const schema = z.object({
   name: z.string(),
   email: z.string().email(),
   password: z.string().optional(),
+  salt: z.string(),
   provider: z.string(),
   emailVerified: z.boolean().default(false),
   avatarUrl: z.string().optional(),
   providerUserId: z.string().optional(),
   createdAt: z.string().datetime().optional(),
   updatedAt: z.string().datetime().optional(),
+  lastLoggedIn: z.string().datetime().optional(),
 });
 
 export const accessedAppSchema = z.object({
@@ -112,6 +114,7 @@ export class AuthC1User implements DurableObject {
         algorithm: app.settings.algorithm,
         sessionId,
       });
+
       this.sessions = {
         ...this.sessions,
         [sessionId]: {
@@ -121,6 +124,7 @@ export class AuthC1User implements DurableObject {
           createdAt: new Date().toISOString(),
         },
       };
+
       this.userData = user;
       await Promise.all([
         this.state.storage?.put("userData", {

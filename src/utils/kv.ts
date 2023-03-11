@@ -1,4 +1,5 @@
 import { Context } from "hono";
+import { ApplicationRequest } from "../controller/applications/create";
 import { ProviderSettings } from "../models/provider";
 
 const defaultSettings: ProviderSettings = {
@@ -78,18 +79,42 @@ const defaultSettings: ProviderSettings = {
   slack_scope: "",
 };
 
-export function storeProviderSettings(
-  c: Context,
-  id: string,
-  data: any = {}
-) {
+export interface ApplicationDetails {
+  providerDetails: ProviderSettings;
+  applicationData: ApplicationRequest;
+}
+
+export function storeProviderSettings(c: Context, id: string, data: any = {}) {
   const settings = {
     ...defaultSettings,
     ...data,
   };
+
   return c.env.AUTHC1_APPLICATION_PROVIDER_DETAILS.put(
     id,
     JSON.stringify(settings)
+  );
+}
+
+export function storeApplication(
+  c: Context,
+  id: string,
+  applicationData: ApplicationRequest,
+  prviderData: any = {}
+) {
+  const providerDetails = {
+    ...defaultSettings,
+    ...prviderData,
+  };
+
+  const data: ApplicationDetails = {
+    providerDetails,
+    applicationData,
+  };
+
+  return c.env.AUTHC1_APPLICATION_PROVIDER_DETAILS.put(
+    id,
+    JSON.stringify(data)
   );
 }
 

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ApplicationClient } from "../../do/AuthC1App";
 import { AccessedApp, UserClient, UserData } from "../../do/AuthC1User";
 import { createHash } from "../../utils/hash";
-import { storeProviderSettings } from "../../utils/kv";
+import { storeApplication, storeProviderSettings } from "../../utils/kv";
 import {
   generateRandomID,
   generateUniqueIdWithPrefix,
@@ -37,10 +37,6 @@ export const setupApplicationController = async (c: Context) => {
   const applicationId = generateUniqueIdWithPrefix();
   const userId = generateUniqueIdWithPrefix();
 
-  const id = c.env.AuthC1App.idFromName(applicationId);
-  const applicationObj = c.env.AuthC1App.get(id);
-  const applicationClient = new ApplicationClient(applicationObj);
-
   const { salt, hash } = await createHash(password);
 
   const userData: UserData = {
@@ -51,50 +47,39 @@ export const setupApplicationController = async (c: Context) => {
     password: hash,
     provider: "email",
     emailVerified: false,
+    salt,
   };
 
   console.log("userData", userData);
 
-  const appData = await applicationClient.create(
-    {
-      id: applicationId,
-      name,
-      settings,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: userId,
-      name,
-      email,
-      invited: false,
-    }
-  );
-
-  console.log("appData", JSON.stringify(appData));
-
-  await Promise.all([storeProviderSettings(c, applicationId)]);
-
+  const appData = {
+    id: applicationId,
+    name,
+    settings,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
   const key = `${applicationId}:email:${email}`;
-  const userObjId = c.env.AuthC1User.idFromName(key);
-  const stub = c.env.AuthC1User.get(userObjId);
-  const userClient = new UserClient(stub);
-  await userClient.createUser(userData, appData);
-  console.log("added user");
-  await userClient.setAccess(
-    {
-      id: applicationId,
-      name,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      accessType: "owner",
-    } as AccessedApp,
-    appData
-  );
 
-  console.log("user object access added");
-
-  await c.env.AUTHC1_USER_DETAILS.put(userId, salt);
+  await Promise.all([
+    storeApplication(c, applicationId, appData),
+    c.env.AUTHC1_USER_DETAILS.put(
+      key,
+      JSON.stringify({
+        userData,
+        apps: {
+          [applicationId]: {
+            id: applicationId,
+            name,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            accessType: "owner",
+          } as AccessedApp,
+        },
+        sessions: {},
+      })
+    ),
+  ]);
   return c.json({
     applicationId,
     userId: userData?.id,

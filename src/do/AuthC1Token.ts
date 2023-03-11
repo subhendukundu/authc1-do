@@ -17,9 +17,11 @@ export type AuthDetials = z.infer<typeof tokenSchema>;
 
 export class TokenClient {
   c: Context;
+  applicationData: any;
 
-  constructor(c: Context) {
+  constructor(c: Context, appData: any) {
     this.c = c;
+    this.applicationData = appData;
   }
 
   async createToken(
@@ -38,7 +40,8 @@ export class TokenClient {
 
     await this.c.env.AUTHC1_DO_USER_TOKEN_DETAILS.put(
       refreshToken,
-      JSON.stringify(json)
+      JSON.stringify(json),
+      { expirationTtl: this.applicationData?.settings?.expires_in || 3600 }
     );
     return json;
   }

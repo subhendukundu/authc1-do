@@ -6,7 +6,7 @@ import { confirmRoutes } from "./routes/confirm";
 import { loginRoutes } from "./routes/login";
 import { providersRoutes } from "./routes/providers";
 import { registerRoutes } from "./routes/register";
-// import { setupRoutes } from "./routes/setup";
+import { setupRoutes } from "./routes/setup";
 import { verifyRoutes } from "./routes/verify";
 import { webhookRoutes } from "./routes/webhook";
 export { AuthC1App } from "./do/AuthC1App";
@@ -48,7 +48,7 @@ v1Routes.route("/accounts", accountsRoutes);
 v1UnauthRoutes.route("/webhook", webhookRoutes);
 v1UnauthRoutes.route("/providers", providersRoutes);
 
-// v1UnauthRoutes.route("/setup", setupRoutes);
+v1UnauthRoutes.route("/setup", setupRoutes);
 
 app.route("/api/v1", v1UnauthRoutes);
 app.route("/api/v1", v1Routes);
