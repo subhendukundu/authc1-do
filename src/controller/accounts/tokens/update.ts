@@ -27,11 +27,8 @@ export const updateAccessTokenByRefreshToken = async (c: Context) => {
     const applicationInfo = c.get("applicationInfo") as ApplicationRequest;
     const { settings } = applicationInfo;
     const { refresh_token: refreshToken } = body;
-
-    const tokenObjId = c.env.AuthC1Token.idFromName(refreshToken);
-    const stub = c.env.AuthC1User.get(tokenObjId);
-    const tokenClient = new TokenClient(stub);
-    const tokenInfo = await tokenClient.getToken();
+    const tokenClient = new TokenClient(c);
+    const tokenInfo = await tokenClient.getToken(refreshToken);
 
     if (!tokenInfo?.userId) {
       return handleError(refreshTokenNotValidError, c);

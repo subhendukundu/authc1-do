@@ -37,6 +37,7 @@ export function authenticateApplication(id?: string): MiddlewareHandler {
       return setUnauthorizedResponse(c);
     }
     c.set("applicationInfo", data);
+    c.set("applicationClient", applicationClient);
     await next();
   };
 }

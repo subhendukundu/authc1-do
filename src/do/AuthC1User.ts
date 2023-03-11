@@ -47,6 +47,7 @@ export type AccessedApp = z.infer<typeof accessedAppSchema>;
 export type AuthResponse = {
   accessToken: string;
   refreshToken: string;
+  userData?: UserData;
 };
 
 export class AuthC1User implements DurableObject {
@@ -411,9 +412,7 @@ export class AuthC1User implements DurableObject {
     sessionId: string,
     applicationId: string
   ) {
-    const userObjId = c.env.AuthC1Token.idFromName(refreshToken);
-    const stub = c.env.AuthC1Token.get(userObjId);
-    const tokenClient = new TokenClient(stub);
+    const tokenClient = new TokenClient(c);
     return tokenClient.createToken(
       sessionId,
       refreshToken,

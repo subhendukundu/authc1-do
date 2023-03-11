@@ -11,14 +11,14 @@ import { verifyRoutes } from "./routes/verify";
 import { webhookRoutes } from "./routes/webhook";
 export { AuthC1App } from "./do/AuthC1App";
 export { AuthC1User } from "./do/AuthC1User";
-export { AuthC1Token } from "./do/AuthC1Token";
+// export { AuthC1Token } from "./do/AuthC1Token";
 export { AuthC1Activity } from "./do/AuthC1Activity";
 
 type Bindings = {
   AuthC1App: DurableObjectNamespace;
-  AuthC1Token: DurableObjectNamespace;
   AuthC1User: DurableObjectNamespace;
   AUTHC1_USER_DETAILS: KVNamespace;
+  AUTHC1_DO_USER_TOKEN_DETAILS: KVNamespace;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
